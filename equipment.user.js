@@ -646,7 +646,6 @@
     const ClassQuality = 'eqa-quality'
     const ClassMain = 'eqa-eqa'
     const ClassAnnotated = 'eqa-annotated'
-    const ClassAuctionLoader = 'eqa-auction-loader'
     const ClassAuctionFilter = 'eqa-auction-filter'
     const ClassInventoryFilter = 'eqa-inventory-filter'
     const ClassBar = 'bar'
@@ -690,25 +689,6 @@
       return debounced
     }
 
-    const predebounce = (func, wait = 100) => {
-      let timeout = false;
-      async function predebounced(...args) {
-        const settimer = run => setTimeout(async () => {
-          timeout = null
-          if(run) { await func(...args) }
-        }, wait)
-
-        if(!timeout) {
-          timeout = settimer(false)
-          await func(...args)
-        } else {
-          clearTimeout(timeout)
-          timeout = settimer(true)
-        }
-      }
-      return predebounced
-    }
-
     const clamp = (n, a, b) => Math.max(Math.min(a, b), Math.min(Math.max(a, b), n))
 
     const isAuction   = _ => window.location.href.startsWith('https://www.torn.com/amarket.php')
@@ -725,8 +705,37 @@
     const getArmorPart = item => (isAuction() && item.querySelector('span.item-name')?.textContent.split(' ').at(-1)) ||
                                  (isInventory() && item.querySelector('span.name-wrap > span.name')?.textContent.split(' ').at(-1))
 
+    const createElement = (type, classes, text, on_click) => {
+      let el = document.createElement(type)
+      el.classList.add(...classes)
+      if(text) { el.textContent = text }
+      if(on_click) { el.addEventListener('click', on_click) }
+      return el
+    }
+
+    const createAuctionElements = _ => {
+      const selParent = 'div.auction-market-main-cont > div.add-listing'
+      const selNextPage = 'a[href^="amarket.php#itemtab=armor"] > i.pagination-right'
+      const selPrevPage = 'a[href^="amarket.php#itemtab=armor"] > i.pagination-left'
+
+      let weaponsContainerEl = document.createElement('div')
+      let armorContainerEl = document.createElement('div')
+
+      armorContainerEl.appendChild(createElement('div', ['torn-btn', 'eqa-auction-loader-button', 'eqa-button'],         'Next', _ => document.querySelector(selNextPage)?.click()))
+      armorContainerEl.appendChild(createElement('div', ['torn-btn', 'eqa-auction-loader-button', 'eqa-button', 'prev'], 'Prev', _ => document.querySelector(selPrevPage)?.click()))
+      armorContainerEl.appendChild(createElement('div', ['eqa-auction-loader']))
+      document.querySelector(selParent).appendChild(armorContainerEl)
+
+      weaponsContainerEl.appendChild(createElement('div', ['torn-btn', 'eqa-auction-loader-button', 'eqa-button'], 'Load'))
+      weaponsContainerEl.appendChild(createElement('div', ['eqa-auction-loader']))
+      document.querySelector(selParent).appendChild(weaponsContainerEl)
+
+      return { armor: armorContainerEl, weapons: weaponsContainerEl, armorPage: armorContainerEl.lastElementChild, weaponsPage: weaponsContainerEl.lastElementChild, weaponsLoad: weaponsContainerEl.firstElementChild }
+    }
+
+    let auctionElements = null
     const auctionPageLoader = _ => {
-      if(!isAuction() || document.querySelector(`.${ClassAuctionLoader}`) || !ENABLE_AUCTION_LOADER) { return }
+      if(!isAuction() || document.querySelector(`.eqa-auction-loader`) || !ENABLE_AUCTION_LOADER) { return }
       const listingID = {
         weapons: '#types-tab-1',
         armor: '#types-tab-2',
@@ -738,77 +747,47 @@
       const getEndPage = _ => parseInt(document.querySelector('a.page-number.last[page]')?.textContent || 0) * 10
       const getItemType = _ => window.location.hash.split('&')[0].split('itemtab=')[1]
       const render = item => `<li class="" id="${ item.ID }"><div class="item-cont-wrap"><span class="img-wrap"><span class="item-plate ${ item.glowClass }"><img class="item torn-item large" src="/images/items/${ item.itemID }/large.png""></span><span class="item-hover" item="${ item.itemID }" armoury="${ item.armouryID }" loaded="0" href="imarket.php?step=getiteminfo"><button class="view-info wai-btn" aria-label="${ item.arialabel }" i-data="i_202_287_100_50"></button></span></span><span class="title"><span class="bold t-blue item-name c-pointer" href="iteminfo.php?ID=${ item.itemID }">${ item.itemName }</span><p class="t-gray-6">(${ item.rare })</p></span><div class="item-bonuses">${ item.item_image_icons }</div></div><div class="seller-wrap"><div class="name">Item seller:<a href="${ item.seller.link }">${ item.seller.name }</a></div><div class="delimiter"><div class="l-delimiter"></div><div class="r-delimiter"></div></div><div class="namehight">High bidder:<a href="${ item.hightbidder.link }">${ item.hightbidder.name }</a></div></div><div class="bids-wrap">${ item.bids } bids</div><div class="c-bid-wrap">${ item.topbid }</div><div class="bid-wrap"><a class="bid-icon" role="button" href="#"></a><span class="bid-btn btn-wrap silver"><span class="bid btn"><button class="torn-btn">BID</button></span></span></div><div class="time-wrap"><span title="${ item.enddate }"><i class="timer-icon"></i><span>${ item.timer.d ? `${ item.timer.d }d ` : "" }${ item.timer.h ? `${ item.timer.h }h ` : "" }${ item.timer.m ? `${ item.timer.m }m ` : "" }${ item.timer.s ? `${ item.timer.s }s ` : "" }</span></span></div></li>`
-      const getPage = (start, callback) => getAction({ type: 'post', action: 'amarket.php', success: str => callback(str), data: { step: 'getAuctionItemsList', itemType: getItemType(), start: start } })
+      const getPage = async (start, callback) => await getAction({ type: 'post', action: 'amarket.php', success: str => callback(str), data: { step: 'getAuctionItemsList', itemType: getItemType(), start: start } })
       const getListingEl = _ => document.querySelector(`${ listingID[getItemType()] } > div > ul`)
       const handlePage = str => JSON.parse(str).list.forEach(i => getListingEl().insertAdjacentHTML('beforeend', render(i)))
 
-      let pageNumberEl = null
-      let loaderContainerEl = null
-      let nextButton = null
-      let prevButton = null
-      let pageNumberArmor = null
-      const updatePageNumber = e => {
-        if(!nextButton) {
-          const selCurrPage = 'a.page-number.active.page-show[href^="amarket.php#itemtab=armor"][page]'
-          const selLastPage = 'a.page-number.page-show[href^="amarket.php#itemtab=armor"][page]'
-          const selNextPage = 'a[href^="amarket.php#itemtab=armor"] > i.pagination-right'
-          const selPrevPage = 'a[href^="amarket.php#itemtab=armor"] > i.pagination-left'
-          nextButton = document.createElement('div')
-          nextButton.classList.add('torn-btn', 'eqa-auction-loader-button', 'eqa-button')
-          nextButton.textContent = 'Next'
-          nextButton.addEventListener('click', _ => document.querySelector(selNextPage)?.click())
-          document.querySelector('div.auction-market-main-cont > div.add-listing').appendChild(nextButton)
-          prevButton = document.createElement('div')
-          prevButton.classList.add('torn-btn', 'eqa-auction-loader-button', 'eqa-button', 'prev')
-          prevButton.textContent = 'Prev'
-          prevButton.addEventListener('click', _ => document.querySelector(selPrevPage)?.click())
-          document.querySelector('div.auction-market-main-cont > div.add-listing').appendChild(prevButton)
-          pageNumberArmor = document.createElement('div')
-          pageNumberArmor.classList.add(ClassAuctionLoader)
-          const updatePageArmorNumber = debounce(_ => document.querySelector(selCurrPage) ? (pageNumberArmor.textContent = `Page ${ document.querySelector(selCurrPage)?.getAttribute('page') || '' }/${ (parseInt(Array.from(document.querySelectorAll(selLastPage))?.at(-1)?.getAttribute('page')) + 1) || '' }`) : updatePageArmorNumber())
-          nextButton.addEventListener('click', updatePageArmorNumber)
-          prevButton.addEventListener('click', updatePageArmorNumber)
-          document.querySelector('div.auction-market-main-cont > div.add-listing').appendChild(pageNumberArmor)
+      const updatePageNumber = url => {
+        if(document.querySelector(`div${listingID[getItemType()]} ${AuctionLoader}`)) {
+          setTimeout(_ => updatePageNumber(window.location.href), 100)
+          return
         }
-        if(!pageNumberEl) {
-          loaderContainerEl = document.createElement('div')
-          let loaderButton = document.createElement('div')
-          loaderButton.classList.add('torn-btn', 'eqa-auction-loader-button', 'eqa-button')
-          loaderButton.textContent = 'Load'
-          loaderButton.addEventListener('click', _ => load(null, true))
-          loaderContainerEl.appendChild(loaderButton)
-          pageNumberEl = document.createElement('div')
-          pageNumberEl.classList.add(ClassAuctionLoader)
-          loaderContainerEl.appendChild(pageNumberEl)
-          document.querySelector('div.auction-market-main-cont > div.add-listing').appendChild(loaderContainerEl)
-        }
-        nextButton.style.display = (e && e.newURL || window.location.href).includes('armor') ? 'block' : 'none'
-        prevButton.style.display = (e && e.newURL || window.location.href).includes('armor') ? 'block' : 'none'
-        pageNumberArmor.style.display = (e && e.newURL || window.location.href).includes('armor') ? 'block' : 'none'
-        loaderContainerEl.style.display = (e && e.newURL || window.location.href).includes('weapons') ? 'block' : 'none'
-        pageNumberEl.textContent = `Loaded ${ parseInt(currentPage[getItemType()] / 10) }/${ parseInt(getEndPage() / 10) } pages`
-        pageNumberEl.setAttribute('pages', currentPage[getItemType()])
+        const selCurrPage = 'div#types-tab-2 a.page-number.active.page-show[page]'
+        const selLastPage = 'div#types-tab-2 a.page-number.page-show[page]'
+        auctionElements.armor.style.display = url.includes('armor') ? 'block' : 'none'
+        auctionElements.armorPage.textContent = `Page ${document.querySelector(selCurrPage)?.getAttribute('page') || ''}/${parseInt(Array.from(document.querySelectorAll(selLastPage))?.at(-1)?.getAttribute('page')) || ''}`
+        auctionElements.weapons.style.display = url.includes('weapons') ? 'block' : 'none'
+        auctionElements.weaponsPage.textContent = `Loaded ${ parseInt(currentPage[getItemType()] / 10) }/${ parseInt(getEndPage() / 10) } pages`
       }
 
-      const load = predebounce((e, force) => {
-        if(!HOT_KEYS.includes(e?.key) && !force) { return }
+      const load = async _ => {
         if(getItemType() !== 'weapons') { return }
         if(currentPage[getItemType()] >= getEndPage()) { return }
-        getPage(currentPage[getItemType()], handlePage)
+        await getPage(currentPage[getItemType()], handlePage)
         currentPage[getItemType()] += 10
-        updatePageNumber()
+        updatePageNumber(window.location.href)
         if(ENABLE_AUCTION_LOADER_LOAD_ALL) {
-          load(e)
+          await sleep(100)
+          await load()
         }
-      }, 50)
+      }
 
-      document.addEventListener('keydown', e => load(e))
+      if(!auctionElements) {
+        auctionElements = createAuctionElements()
+      }
+
+      auctionElements.weaponsLoad.addEventListener('click', async _ => await load())
+      document.addEventListener('keydown', async e => HOT_KEYS.includes(e.key) && await load())
       window.addEventListener('hashchange', e => {
         currentPage.weapons = 10
         currentPage.armor = 10
-        updatePageNumber(e)
+        updatePageNumber(e.newURL)
       })
-      updatePageNumber()
+      updatePageNumber(window.location.href)
     }
 
     const initAuctionFilters = _ => {
