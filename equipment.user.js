@@ -83,6 +83,19 @@
           display: none;
         }
       }
+
+      li[id] span.title div.bar {
+        z-index: unset;
+      }
+
+      li[id]:nth-of-type(1),
+      li[id]:nth-of-type(2),
+      li[id]:nth-of-type(3) {
+        span.title div.eqa-thetip {
+          bottom: unset;
+          top: calc(100% + 6px);
+        }
+      }
     }
 
     /* ===== INVENTORY ENHANCED WEAPON COLOR ===== */
@@ -153,13 +166,13 @@
       }
 
       .eqa-score {
-        top: 4px;
-        left: -322px;
+        top: 2px;
+        left: 33rem;
       }
 
       .eqa-quality {
-        top: 2px;
-        left: 52rem;
+        top: 4px;
+        left: -22px;
       }
 
       &:not(:has(.eqa-inventory-filter label.eqa-chk.gray   input:checked)) div#category-wrap ul[id] > li[data-armoryid]:not(:has(div.title span.image-wrap[class*="glow"])) {
@@ -177,106 +190,103 @@
     }
 
     /* ===== ANNOTATIONS ===== */
-    .eqa-eqa {
-      .bar {
-        position: relative;
-        margin-top: 2px;
-        height: 1rem;
-        padding: 2px;
-        background: linear-gradient(to bottom, rgba(255,255,255,0.06), rgba(0,0,0,0.08)), #1b1d21;
-        border-radius: 5px;
-        box-shadow: inset 0 1px 1px rgba(255,255,255,0.05), inset 0 -1px 1px rgba(0,0,0,0.35);
-        overflow: hidden;
-        width: 6rem;
-        z-index: 2;
+    .eqa-bar {
+      position: relative;
+      margin-top: 2px;
+      height: 1rem;
+      padding: 2px;
+      background: linear-gradient(to bottom, rgba(255,255,255,0.06), rgba(0,0,0,0.08)), #1b1d21;
+      border-radius: 5px;
+      box-shadow: inset 0 1px 1px rgba(255,255,255,0.05), inset 0 -1px 1px rgba(0,0,0,0.35);
+      width: 6rem;
+      z-index: 20;
 
-        > div {
-          height: 100%;
-          display: flex;
-          align-items: center;
-          font-size: 0.75rem;
-          font-weight: 500;
-          letter-spacing: 0.02em;
-          color: #f7f8fa;
-          text-shadow: 0 1px 1px rgba(0,0,0,0.8), 0 0 2px rgba(0,0,0,0.5);
-          border-radius: 4px;
-          overflow: visible;
-          white-space: nowrap;
-          background-image: linear-gradient(to bottom, rgba(255,255,255,0.18), rgba(255,255,255,0));
+      .fill {
+        height: 100%;
+        display: flex;
+        align-items: center;
+        font-size: 0.75rem;
+        font-weight: 500;
+        letter-spacing: 0.02em;
+        color: #f7f8fa;
+        text-shadow: 0 1px 1px rgba(0,0,0,0.8), 0 0 2px rgba(0,0,0,0.5);
+        border-radius: 4px;
+        overflow: visible;
+        white-space: nowrap;
+        background-image: linear-gradient(to bottom, rgba(255,255,255,0.18), rgba(255,255,255,0));
 
-          &.gray {
-            background: linear-gradient(to bottom, #4b4f55, #2f3338);
-          }
-          &.yellow {
-            background: linear-gradient(to bottom, #caa43a, #8f7424);
-          }
-          &.orange {
-            background: linear-gradient(to bottom, #c4661f, #8a4415);
-          }
-          &.red {
-            background: linear-gradient(to bottom, #a83232, #6f1f1f);
-          }
-          &.common {
-            background: linear-gradient(to bottom, #4b4f55, #2f3338);
-          }
-          &.uncommon {
-            background: linear-gradient(to bottom, #1fa60c, #0f5f06);
-          }
-          &.rare {
-            background: linear-gradient(to bottom, #1b6ec6, #023b75);
-          }
-          &.epic {
-            background: linear-gradient(to bottom, #7e3bb3, #4a186f);
-          }
-          &.legendary {
-            background: linear-gradient(-45deg, #eeeeee33 35%, #fafafa77 50%, #eeeeee33 60%), linear-gradient(to bottom, #c4661f, #8a4415);
-            background-size: 300%;
-            background-position-x: 100%;
-            animation: shimmer 2s infinite linear;
-          }
-          &.artifact {
-            background: linear-gradient(-45deg, #eeeeee33 35%, #fafafa77 50%, #eeeeee33 60%), linear-gradient(to bottom, #a83232, #6f1f1f);
-            background-size: 300%;
-            background-position-x: 100%;
-            animation: shimmer 1.2s infinite linear;
-          }
-          &.low {
-            background: linear-gradient(to bottom, #caa43a, #8f7424);
-          }
-          &.medium {
-            background: linear-gradient(to bottom, #c4661f, #8a4415);
-          }
-          &.high {
-            background: linear-gradient(to bottom, #a83232, #6f1f1f);
-          }
+        &.gray {
+          background: linear-gradient(to bottom, #4b4f55, #2f3338);
+        }
+        &.yellow {
+          background: linear-gradient(to bottom, #caa43a, #8f7424);
+        }
+        &.orange {
+          background: linear-gradient(to bottom, #c4661f, #8a4415);
+        }
+        &.red {
+          background: linear-gradient(to bottom, #a83232, #6f1f1f);
+        }
+        &.common {
+          background: linear-gradient(to bottom, #4b4f55, #2f3338);
+        }
+        &.uncommon {
+          background: linear-gradient(to bottom, #1fa60c, #0f5f06);
+        }
+        &.rare {
+          background: linear-gradient(to bottom, #1b6ec6, #023b75);
+        }
+        &.epic {
+          background: linear-gradient(to bottom, #7e3bb3, #4a186f);
+        }
+        &.legendary {
+          background: linear-gradient(-45deg, #eeeeee33 35%, #fafafa77 50%, #eeeeee33 60%), linear-gradient(to bottom, #c4661f, #8a4415);
+          background-size: 300%;
+          background-position-x: 100%;
+          animation: shimmer 2s infinite linear;
+        }
+        &.artifact {
+          background: linear-gradient(-45deg, #eeeeee33 35%, #fafafa77 50%, #eeeeee33 60%), linear-gradient(to bottom, #a83232, #6f1f1f);
+          background-size: 300%;
+          background-position-x: 100%;
+          animation: shimmer 1.2s infinite linear;
+        }
+        &.low {
+          background: linear-gradient(to bottom, #caa43a, #8f7424);
+        }
+        &.medium {
+          background: linear-gradient(to bottom, #c4661f, #8a4415);
+        }
+        &.high {
+          background: linear-gradient(to bottom, #a83232, #6f1f1f);
+        }
 
-          &::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border-radius: inherit;
-            background: linear-gradient(to bottom, rgba(255,255,255,0.12), rgba(255,255,255,0));
-            pointer-events: none;
-          }
+        &::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          border-radius: inherit;
+          background: linear-gradient(to bottom, rgba(255,255,255,0.12), rgba(255,255,255,0));
+          pointer-events: none;
         }
       }
+    }
 
-      .eqa-bonus {
-      }
+    .eqa-bonus {
+    }
 
-      .eqa-score {
-        position: absolute;
-        top: -50px;
-        left: -6px;
-        width: 2.3rem;
-      }
+    .eqa-score {
+      position: absolute;
+      top: -50px;
+      left: -6px;
+      width: 2.3rem;
+    }
 
-      .eqa-quality {
-        position: absolute;
-        top: -26px;
-        left: -6px;
-        width: 2.3rem;
-      }
+    .eqa-quality {
+      position: absolute;
+      top: -26px;
+      left: -6px;
+      width: 2.3rem;
     }
 
     .eqa-auction-loader {
@@ -302,6 +312,66 @@
 
     .eqa-button.eqa-auction-loader-button.prev {
       left: 40rem;
+    }
+
+    .eqa-tooltip {
+      cursor: pointer;
+      overflow: visible;
+
+      &:hover {
+        .eqa-thetip {
+          opacity: 1;
+          transform: translate(-50%, -2px);
+        }
+      }
+
+      .eqa-tooltipwrapper {
+        position: relative;
+      }
+
+      .eqa-thetip {
+        position: absolute;
+        bottom: calc(100% + 6px);
+        left: 50%;
+        pointer-events: none;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        opacity: 0;
+        transition: opacity 0.2s ease, transform 0.2s ease;
+        padding: 4px 8px;
+        transform: translateX(-50%);
+        background: linear-gradient( to bottom, #1b1e24, #0f1116 );
+        color: #e5e7eb;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 6px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+        white-space: nowrap;
+        line-height: 24px;
+        z-index: 99999;
+        min-width: 6rem;
+
+        .eqa-tooltip-title {
+          margin: 0 8px 3px;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        > ul >li {
+          display: flex;
+          justify-content: space-between;
+          gap: 12px;
+
+          &.yellow {
+            color: #caa43a;
+          }
+          &.orange {
+            color: #c4661f;
+          }
+          &.red {
+            color: #a83232;
+          }
+        }
+      }
     }
 
     .eqa-auction-filter {
@@ -574,7 +644,7 @@
     Achilles: { yellow: { low: 50, high: 73 }, orange: { low: 77, high: 98 }, red: { low: 114, high: 169 } },
     Assassinate: { yellow: { low: 50, high: 69 }, orange: { low: 70, high: 93 }, red: { low: 101, high: 148 } },
     Backstab: { yellow: { low: 30, high: 40 }, orange: { low: 45, high: 52 }, red: { low: 79, high: 96 } },
-    Berserk: { yellow: { low: 20, high: 34 }, orange: { low: 39, high: 53 }, red: { low: 60, high: 87 } },
+    Berserk: { yellow: { low: 20, high: 34 }, orange: { low: 39, high: 54 }, red: { low: 60, high: 87 } },
     Bleed: { yellow: { low: 20, high: 30 }, orange: { low: 31, high: 45 }, red: { low: 53, high: 72 } },
     Blindside: { yellow: { low: 25, high: 37 }, orange: { low: 41, high: 59 }, red: { low: 73, high: 96 } },
     Bloodlust: { yellow: { low: 10, high: 12 }, orange: { low: 12, high: 14 }, red: { low: 17, high: 17 } },
@@ -582,15 +652,15 @@
     Conserve: { yellow: { low: 25, high: 29 }, orange: { low: 30, high: 36 }, red: { low: 43, high: 49 } },
     Cripple: { yellow: { low: 20, high: 28 }, orange: { low: 29, high: 40 }, red: { low: 52, high: 58 } },
     Crusher: { yellow: { low: 50, high: 72 }, orange: { low: 76, high: 102 }, red: { low: 133, high: 133 } },
-    Cupid: { yellow: { low: 50, high: 74 }, orange: { low: 75, high: 110 }, red: { low: 124, high: 158 } },
-    Deadeye: { yellow: { low: 25, high: 45 }, orange: { low: 46, high: 72 }, red: { low: 76, high: 123 } },
+    Cupid: { yellow: { low: 50, high: 74 }, orange: { low: 75, high: 110 }, red: { low: 124, high: 161 } },
+    Deadeye: { yellow: { low: 25, high: 45 }, orange: { low: 46, high: 73 }, red: { low: 76, high: 123 } },
     Deadly: { yellow: { low: 2, high: 3 }, orange: { low: 4, high: 6 }, red: { low: 9, high: 9 } },
     Disarm: { yellow: { low: 3, high: 5 }, orange: { low: 5, high: 9 }, red: { low: 9, high: 15 } },
     'Double-edged': { yellow: { low: 10, high: 15 }, orange: { low: 16, high: 24 }, red: { low: 32, high: 32 } },
     'Double Tap': { yellow: { low: 15, high: 23 }, orange: { low: 25, high: 35 }, red: { low: 40, high: 57 } },
-    Empower: { yellow: { low: 52, high: 85 }, orange: { low: 90, high: 140 }, red: { low: 180, high: 222 } },
+    Empower: { yellow: { low: 52, high: 85 }, orange: { low: 90, high: 141 }, red: { low: 180, high: 222 } },
     Eviscerate: { yellow: { low: 15, high: 18 }, orange: { low: 19, high: 24 }, red: { low: 26, high: 34 } },
-    Execute: { yellow: { low: 15, high: 18 }, orange: { low: 18, high: 22 }, red: { low: 23, high: 28 } },
+    Execute: { yellow: { low: 15, high: 18 }, orange: { low: 18, high: 22 }, red: { low: 23, high: 30 } },
     Expose: { yellow: { low: 7, high: 9 }, orange: { low: 10, high: 14 }, red: { low: 14, high: 21 } },
     Finale: { yellow: { low: 10, high: 11 }, orange: { low: 12, high: 13 }, red: { low: 13, high: 17 } },
     Focus: { yellow: { low: 15, high: 19 }, orange: { low: 20, high: 24 }, red: { low: 32, high: 35 } },
@@ -612,7 +682,7 @@
     Roshambo: { yellow: { low: 50, high: 69 }, orange: { low: 76, high: 90 }, red: { low: 132, high: 132 } },
     Slow: { yellow: { low: 20, high: 28 }, orange: { low: 29, high: 42 }, red: { low: 43, high: 64 } },
     Smurf: { yellow: { low: 1, high: 1 }, orange: { low: 2, high: 3 }, red: { low: 5, high: 5 } },
-    Specialist: { yellow: { low: 20, high: 27 }, orange: { low: 28, high: 38 }, red: { low: 40, high: 52 } },
+    Specialist: { yellow: { low: 20, high: 27 }, orange: { low: 28, high: 38 }, red: { low: 40, high: 53 } },
     Stricken: { yellow: { low: 30, high: 43 }, orange: { low: 44, high: 54 }, red: { low: 85, high: 96 } },
     Stun: { yellow: { low: 10, high: 15 }, orange: { low: 16, high: 23 }, red: { low: 25, high: 40 } },
     Suppress: { yellow: { low: 25, high: 31 }, orange: { low: 33, high: 40 }, red: { low: null, high: 49 } },
@@ -645,11 +715,11 @@
   const ClassScore = 'eqa-score'
   const ClassBonus = 'eqa-bonus'
   const ClassQuality = 'eqa-quality'
-  const ClassMain = 'eqa-eqa'
   const ClassAnnotated = 'eqa-annotated'
   const ClassAuctionFilter = 'eqa-auction-filter'
   const ClassInventoryFilter = 'eqa-inventory-filter'
-  const ClassBar = 'bar'
+  const ClassBar = 'eqa-bar'
+  const ClassTooltip = 'eqa-tooltip'
   const AuctionLoader = 'ul.items-list > li.last > span.ajax-preloader'
   const InventoryLoader = 'li > span.ajax-preloader'
   const Configurations = {
@@ -704,13 +774,13 @@
   const isEquipment = _ => isArmor() || isWeapons()
 
   const getArmorPart = item => (isAuction() && item.querySelector('span.item-name')?.textContent.split(' ').at(-1)) ||
-                                (isInventory() && item.querySelector('span.name-wrap > span.name')?.textContent.split(' ').at(-1))
+                               (isInventory() && item.querySelector('span.name-wrap > span.name')?.textContent.split(' ').at(-1));
 
   const createElement = (type, classes, text, on_click) => {
     let el = document.createElement(type)
-    el.classList.add(...classes)
-    if(text) { el.textContent = text }
-    if(on_click) { el.addEventListener('click', on_click) }
+    if(classes?.length) { el.classList.add(...classes) }
+    if(text)            { el.innerHTML = text }
+    if(on_click)        { el.addEventListener('click', on_click) }
     return el
   }
 
@@ -958,10 +1028,7 @@
     if(isNaN(score)) { return }
     let el = document.createElement('div')
     el.classList.add(ClassScore, ClassBar)
-    let fillel = document.createElement('div')
-    fillel.innerHTML = `&nbsp;${score}`
-    fillel.classList.add(scoreQuality(score))
-    el.appendChild(fillel)
+    el.appendChild(createElement('div', [scoreQuality(score), 'fill'], `&nbsp;${ score }`))
     item.querySelector(config.DisplayScore).insertAdjacentElement('afterbegin', el)
   }
 
@@ -978,6 +1045,34 @@
       bb.color = color
       return bb
     }
+    const addTooltip = (el, bonus) => {
+      if(!EquipmentBonuses[bonus.name]) { l('bad bonus', el, bonus); return }
+      let tooltip = createElement('div', ['eqa-thetip'])
+      tooltip.appendChild(createElement('div', ['eqa-tooltip-title'], bonus.name))
+      let list = createElement('ul')
+      if(EquipmentBonuses[bonus.name].yellow) {
+        Array.from(['Yellow', 'Orange', 'Red']).forEach(c => {
+          let row = createElement('li', [c.toLowerCase()])
+          row.appendChild(createElement('div', '', c))
+          row.appendChild(createElement('div', '', `${ EquipmentBonuses[bonus.name][c.toLowerCase()].low } - ${ EquipmentBonuses[bonus.name][c.toLowerCase()].high }`))
+          list.appendChild(row)
+        })
+      } else if(EquipmentBonuses[bonus.name][bonus.part]) {
+        let row = createElement('li')
+        row.appendChild(createElement('div', '', bonus.part))
+        row.appendChild(createElement('div', '', `${ EquipmentBonuses[bonus.name][bonus.part].low } - ${ EquipmentBonuses[bonus.name][bonus.part].high }`))
+        list.appendChild(row)
+      } else if(EquipmentBonuses[bonus.name].low) {
+        let row = createElement('li')
+        row.appendChild(createElement('div', '', 'All'))
+        row.appendChild(createElement('div', '', `${ EquipmentBonuses[bonus.name].low } - ${ EquipmentBonuses[bonus.name].high }`))
+        list.appendChild(row)
+      }
+      tooltip.appendChild(list)
+      let wrap = createElement('div', ['eqa-tooltip-wrapper'])
+      wrap.appendChild(tooltip)
+      el.appendChild(wrap)
+    }
     const bonuses = Array.from(item.querySelectorAll(config.Bonuses)).map(b => parseBonus(b)).filter(b => b)
     if(bonuses.length === 2) {
       bonuses.forEach(b => b.value && EquipmentBonuses[b.name] && EquipmentBonuses[b.name][b.color]?.low > b.value && (b.color = { 'red': 'orange', 'orange': 'yellow' }[bonuses[1].color]))
@@ -988,9 +1083,9 @@
     }
     bonuses.forEach(b => {
       let el = document.createElement('div')
-      el.classList.add(ClassBonus, ClassBar)
-      let fillel = document.createElement('div')
-      fillel.innerHTML = `&nbsp;&nbsp;${ isWeapons() ? b.name : ''} ${b.text}`
+      el.classList.add(ClassBonus, ClassBar, ClassTooltip)
+      addTooltip(el, b)
+      let fillel = createElement('div', ['fill'], `&nbsp;&nbsp;${ isWeapons() ? b.name : '' } ${ b.text }`)
       if(EquipmentBonuses[b.name]) {
         const low = EquipmentBonuses[b.name][b.color]?.low || EquipmentBonuses[b.name][b.part]?.low || EquipmentBonuses[b.name].low
         const high = EquipmentBonuses[b.name][b.color]?.high || EquipmentBonuses[b.name][b.part]?.high || EquipmentBonuses[b.name].high
@@ -1019,10 +1114,7 @@
     const relAmount = amount - (color === 'orange' ? 100 : (color === 'red' ? 200 : 60))
     let el = document.createElement('div')
     el.classList.add(ClassQuality, ClassBar)
-    let fillel = document.createElement('div')
-    fillel.innerHTML = `&nbsp;${amount}%`
-    fillel.classList.add(relAmount < 40 ? 'low' : (relAmount < 70 ? 'medium' : 'high'))
-    el.appendChild(fillel)
+    el.appendChild(createElement('div', [relAmount < 40 ? 'low' : (relAmount < 70 ? 'medium' : 'high'), 'fill'], `&nbsp;${amount}%`))
     item.querySelector(config.DisplayQuality).insertAdjacentElement('afterbegin', el)
   }
 
@@ -1038,9 +1130,7 @@
       const bonus = b.title ? b.title.split('</b><br/>')[1] : ''
       let el = document.createElement('div')
       el.classList.add('eqa-mod', ClassBar)
-      let fillel = document.createElement('div')
-      fillel.innerHTML = `${mod}: ${bonus}`
-      el.appendChild(fillel)
+      el.appendChild(createElement('div', ['fill'], `${ mod }: ${ bonus }`))
       cont.appendChild(el)
     })
     item.querySelector(config.DisplayQuality).insertAdjacentElement('afterbegin', cont)
@@ -1051,14 +1141,12 @@
       debounce(annotate)()
     }
     Object.values(Configurations).forEach(config => document.querySelectorAll(config.Item).forEach(item => {
-      item.classList.add(ClassMain)
       item.firstElementChild.classList.add(ClassAnnotated)
       if(ENABLE_EQUIPMENT_QUALITY) { item.addEventListener('mouseenter', _ => addQuality(config, item)) }
       if(ENABLE_WEAPON_SCORE)      { addScore(config, item) }
       if(ENABLE_EQUIPMENT_BONUS)   { addBonuses(config, item) }
       if(ENABLE_WEAPON_MODS)       { addMods(config, item) }
     }))
-    document.querySelectorAll(Configurations.Inventory.ItemAnnotated).forEach(i => i.classList.add(ClassMain))
   }
 
   const sleep = async ms => new Promise(resolve => setTimeout(resolve, ms))
@@ -1077,6 +1165,7 @@
     window.addEventListener('click', debounce(initInventoryFilters))
     window.addEventListener('click', debounce(annotate))
     window.addEventListener('keyup', debounce(annotate))
+    window.addEventListener('scroll', debounce(annotate))
     auctionPageLoader()
     initInventoryFilters()
     initAuctionFilters()
