@@ -25,6 +25,8 @@
   //==============================================================
   //==============================================================
 
+
+
   const CSS = `
     /* ===== INVENTORY LARGE BONUS ICONS ===== */
     li[data-armoryid] .bonuses-wrap .bonus.left i[class*="bonus-attachment"][data-bonusid]:nth-of-type(1) {
@@ -372,6 +374,12 @@
           }
         }
       }
+    }
+
+    .eqa-pending {
+      position: absolute;
+      top: -24px;
+      right: 90px;
     }
 
     .eqa-auction-filter {
@@ -751,13 +759,26 @@
 
   const l = console.log
 
-  const debounce = (func, wait = 150) => {
-    let timeout;
-    function debounced(...args) {
-      clearTimeout(timeout)
-      timeout = setTimeout(async () => await func(...args), wait)
+  const queue = []
+  const queuerun = _ => {
+    if(!queue.length) {
+      queuerun.running = false
+      return
     }
-    return debounced
+    queuerun.running = true
+    setTimeout(async _ => {
+      let nextrequest = queue.shift()
+      updatePendingNumber(queue.length)
+      if(nextrequest.args) { await nextrequest.func(...nextrequest.args) }
+      else { await nextrequest.func() }
+      queuerun()
+    }, 150)
+  }
+
+  const queueadd = async (func, args) => {
+    queue.push({func: func, args: args})
+    if(queuerun.running) { return }
+    queuerun()
   }
 
   const clamp = (n, a, b) => Math.max(Math.min(a, b), Math.min(Math.max(a, b), n))
@@ -766,10 +787,10 @@
   const isInventory = _ => window.location.href.startsWith('https://www.torn.com/item.php')
 
   const isWeapons = url => (isAuction() && (url || window.location.href).includes('weapons')) ||
-                            (isInventory() && ['Primary', 'Secondary', 'Melee'].includes(document.querySelector('div.main-items-cont-wrap div[role="heading"] span.items-name')?.textContent))
+                           (isInventory() && ['Primary', 'Secondary', 'Melee'].includes(document.querySelector('div.main-items-cont-wrap div[role="heading"] span.items-name')?.textContent))
 
   const isArmor = url => (isAuction() && (url || window.location.href).includes('armor')) ||
-                          (isInventory() && ['Armor'].includes(document.querySelector('div.main-items-cont-wrap div[role="heading"] span.items-name')?.textContent))
+                         (isInventory() && ['Armor'].includes(document.querySelector('div.main-items-cont-wrap div[role="heading"] span.items-name')?.textContent))
 
   const isEquipment = _ => isArmor() || isWeapons()
 
@@ -790,23 +811,45 @@
     const selPrevPage = 'a[href^="amarket.php#itemtab=armor"] > i.pagination-left'
 
     let weaponsContainerEl = document.createElement('div')
-    let armorContainerEl = document.createElement('div')
+    let armorContainerEl   = document.createElement('div')
 
     armorContainerEl.appendChild(createElement('div', ['torn-btn', 'eqa-auction-loader-button', 'eqa-button'],         'Next', _ => document.querySelector(selNextPage)?.click()))
     armorContainerEl.appendChild(createElement('div', ['torn-btn', 'eqa-auction-loader-button', 'eqa-button', 'prev'], 'Prev', _ => document.querySelector(selPrevPage)?.click()))
     armorContainerEl.appendChild(createElement('div', ['eqa-auction-loader']))
     document.querySelector(selParent).appendChild(armorContainerEl)
 
-    weaponsContainerEl.appendChild(createElement('div', ['torn-btn', 'eqa-auction-loader-button', 'eqa-button'], 'Load'))
+    weaponsContainerEl.appendChild(createElement('div', [ 'eqa-auction-loader-button', 'eqa-button'], 'Load'))
     weaponsContainerEl.appendChild(createElement('div', ['eqa-auction-loader']))
     document.querySelector(selParent).appendChild(weaponsContainerEl)
 
-    return { armor: armorContainerEl, weapons: weaponsContainerEl, armorPage: armorContainerEl.lastElementChild, weaponsPage: weaponsContainerEl.lastElementChild, weaponsLoad: weaponsContainerEl.firstElementChild }
+    return { armor: armorContainerEl,
+             weapons: weaponsContainerEl,
+             armorPage: armorContainerEl.lastElementChild,
+             weaponsPage: weaponsContainerEl.lastElementChild,
+             weaponsLoad: weaponsContainerEl.firstElementChild,
+            }
   }
+
+  const updatePendingNumber = pending => {
+    if(!isAuction()) { return }
+    let el = document.querySelector('div.eqa-pending')
+    if(!el) {
+      el = createElement('div', ['eqa-pending'])
+      document.querySelector('div.auction-market-main-cont > div.add-listing').appendChild(el)
+    }
+    if(!pending) {
+      el.style.display = 'none'
+      return
+    }
+    el.innerText = `Pending ${ pending }`
+    el.style.display = 'block'
+  }
+
 
   let auctionElements = null
   const auctionPageLoader = _ => {
     if(!isAuction() || document.querySelector(`.eqa-auction-loader`) || !ENABLE_AUCTION_LOADER) { return }
+
     const listingID = {
       weapons: '#types-tab-1',
       armor: '#types-tab-2',
@@ -815,18 +858,20 @@
       weapons: 10,
       armor: 10
     }
+
     const getEndPage = _ => parseInt(document.querySelector('a.page-number.last[page]')?.textContent || 0) * 10
     const getItemType = _ => window.location.hash.split('&')[0].split('itemtab=')[1]
-    const render = item => `<li class="" id="${ item.ID }"><div class="item-cont-wrap"><span class="img-wrap"><span class="item-plate ${ item.glowClass }"><img class="item torn-item large" src="/images/items/${ item.itemID }/large.png""></span><span class="item-hover" item="${ item.itemID }" armoury="${ item.armouryID }" loaded="0" href="imarket.php?step=getiteminfo"><button class="view-info wai-btn" aria-label="${ item.arialabel }" i-data="i_202_287_100_50"></button></span></span><span class="title"><span class="bold t-blue item-name c-pointer" href="iteminfo.php?ID=${ item.itemID }">${ item.itemName }</span><p class="t-gray-6">(${ item.rare })</p></span><div class="item-bonuses">${ item.item_image_icons }</div></div><div class="seller-wrap"><div class="name">Item seller:<a href="${ item.seller.link }">${ item.seller.name }</a></div><div class="delimiter"><div class="l-delimiter"></div><div class="r-delimiter"></div></div><div class="namehight">High bidder:<a href="${ item.hightbidder.link }">${ item.hightbidder.name }</a></div></div><div class="bids-wrap">${ item.bids } bids</div><div class="c-bid-wrap">${ item.topbid }</div><div class="bid-wrap"><a class="bid-icon" role="button" href="#"></a><span class="bid-btn btn-wrap silver"><span class="bid btn"><button class="torn-btn">BID</button></span></span></div><div class="time-wrap"><span title="${ item.enddate }"><i class="timer-icon"></i><span>${ item.timer.d ? `${ item.timer.d }d ` : "" }${ item.timer.h ? `${ item.timer.h }h ` : "" }${ item.timer.m ? `${ item.timer.m }m ` : "" }${ item.timer.s ? `${ item.timer.s }s ` : "" }</span></span></div></li>`
-    const getPage = async (start, callback) => await getAction({ type: 'post', action: 'amarket.php', success: str => callback(str), data: { step: 'getAuctionItemsList', itemType: getItemType(), start: start } })
+    const render = item => `<li class="" id="${ item.ID }"><div class="item-cont-wrap"><span class="img-wrap"><span class="item-plate ${ item.glowClass }"><img class="item torn-item large" src="/images/items/${ item.itemID }/large.png"></span><span class="item-hover" item="${ item.itemID }" armoury="${ item.armouryID }" loaded="0" href="imarket.php?step=getiteminfo"><button class="view-info wai-btn" aria-label="${ item.arialabel }" i-data="i_202_287_100_50"></button></span></span><span class="title"><span class="bold t-blue item-name c-pointer" href="iteminfo.php?ID=${ item.itemID }">${ item.itemName }</span><p class="t-gray-6">(${ item.rare })</p></span><div class="item-bonuses">${ item.item_image_icons }</div></div><div class="seller-wrap"><div class="name">Item seller:<a href="${ item.seller.link }">${ item.seller.name }</a></div><div class="delimiter"><div class="l-delimiter"></div><div class="r-delimiter"></div></div><div class="namehight">High bidder:<a href="${ item.hightbidder.link }">${ item.hightbidder.name }</a></div></div><div class="bids-wrap">${ item.bids } bids</div><div class="c-bid-wrap">${ item.topbid }</div><div class="bid-wrap"><a class="bid-icon" role="button" href="#"></a><span class="bid-btn btn-wrap silver"><span class="bid btn"><button class="torn-btn">BID</button></span></span></div><div class="time-wrap"><span title="${ item.enddate }"><i class="timer-icon"></i><span>${ item.timer.d ? `${ item.timer.d }d ` : "" }${ item.timer.h ? `${ item.timer.h }h ` : "" }${ item.timer.m ? `${ item.timer.m }m ` : "" }${ item.timer.s ? `${ item.timer.s }s ` : "" }</span></span></div></li>`
+    const getPage = async (start, callback) => getAction({ type: 'post', action: 'amarket.php', success: str => callback(str), data: { step: 'getAuctionItemsList', itemType: getItemType(), start: start } })
     const getListingEl = _ => document.querySelector(`${ listingID[getItemType()] } > div > ul`)
-    const handlePage = str => JSON.parse(str).list.forEach(i => getListingEl().insertAdjacentHTML('beforeend', render(i)))
+    const handlePage = str => {
+      JSON.parse(str)?.list?.forEach(i => getListingEl().insertAdjacentHTML('beforeend', render(i)))
+      updatePageNumber(window.location.href)
+    }
 
-    const updatePageNumber = url => {
-      if(document.querySelector(`div${listingID[getItemType()]} ${AuctionLoader}`)) {
-        setTimeout(_ => updatePageNumber(window.location.href), 100)
-        return
-      }
+    const updatePageNumber = _ => {
+      if(!isAuction()) { return }
+      const url = window.location.href
       const selCurrPage = 'div#types-tab-2 a.page-number.active.page-show[page]'
       const selLastPage = 'div#types-tab-2 a.page-number.page-show[page]'
       auctionElements.armor.style.display = url.includes('armor') ? 'block' : 'none'
@@ -840,10 +885,8 @@
       if(currentPage[getItemType()] >= getEndPage()) { return }
       await getPage(currentPage[getItemType()], handlePage)
       currentPage[getItemType()] += 10
-      updatePageNumber(window.location.href)
       if(ENABLE_AUCTION_LOADER_LOAD_ALL) {
-        await sleep(100)
-        await load()
+        queueadd(load)
       }
     }
 
@@ -851,14 +894,14 @@
       auctionElements = createAuctionElements()
     }
 
-    auctionElements.weaponsLoad.addEventListener('click', async _ => await load())
-    document.addEventListener('keydown', async e => HOT_KEYS.includes(e.key) && await load())
+    auctionElements.weaponsLoad.addEventListener('click', _ => queueadd(load))
+    document.addEventListener('keydown', async e => HOT_KEYS.includes(e.key) && queueadd(load))
     window.addEventListener('hashchange', e => {
       currentPage.weapons = 10
       currentPage.armor = 10
-      updatePageNumber(e.newURL)
+      setTimeout(_ => updatePageNumber(e.newURL), 500)
     })
-    updatePageNumber(window.location.href)
+    setTimeout(_ => updatePageNumber(e.newURL), 500)
   }
 
   const initAuctionFilters = _ => {
@@ -922,28 +965,27 @@
     })
 
     const filterListings = _ => {
-      if(document.querySelector(AuctionLoader)) {
-        debounce(filterListings)()
-      }
+      if(!isAuction() && !isInventory()) { return }
       document.querySelectorAll('ul.items-list > li[id]').forEach(listing => {
-      let display = true
-      if(armorFilter.value !== 'All armors' && armorFilter.value.length && !listing.querySelector(`span.img-wrap > span.item-hover > button[aria-label*="${ armorFilter.value }"]`)) {
-        display = false
-      }
-      if(weaponFilter.value !== 'All weapons' && weaponFilter.value.length && !listing.querySelector(`span.img-wrap > span.item-hover > button[aria-label*="${ weaponFilter.value }"]`)) {
-        display = false
-      }
-      if(bonusFilter.value !== 'All bonuses' && bonusFilter.value.length && !listing.querySelector(`div.iconsbonuses span.bonus-attachment-icons[title*="${ bonusFilter.value }"]`)) {
-        display = false
-      }
-      document.querySelectorAll(`.${ ClassAuctionFilter } label.eqa-chk > input`).forEach(chk => {
-        const color = chk.getAttribute('eqacolor')
-        if(!chk.checked && listing.querySelector(`div:has(span.glow-${color})`)) {
+        let display = true
+        if(armorFilter.value !== 'All armors' && armorFilter.value.length && !listing.querySelector(`span.img-wrap > span.item-hover > button[aria-label*="${ armorFilter.value }"]`)) {
           display = false
         }
+        if(weaponFilter.value !== 'All weapons' && weaponFilter.value.length && !listing.querySelector(`span.img-wrap > span.item-hover > button[aria-label*="${ weaponFilter.value }"]`)) {
+          display = false
+        }
+        if(bonusFilter.value !== 'All bonuses' && bonusFilter.value.length && !listing.querySelector(`div.iconsbonuses span.bonus-attachment-icons[title*="${ bonusFilter.value }"]`)) {
+          display = false
+        }
+        document.querySelectorAll(`.${ ClassAuctionFilter } label.eqa-chk > input`).forEach(chk => {
+          const color = chk.getAttribute('eqacolor')
+          if(!chk.checked && listing.querySelector(`div:has(span.glow-${color})`)) {
+            display = false
+          }
+        })
+        listing.style.display = display ? 'block' : 'none'
       })
-      listing.style.display = display ? 'block' : 'none'
-    })}
+    }
 
     const setVisibility = url => {
       weaponFilter.style.display = 'none'
@@ -969,14 +1011,9 @@
 
     const form = document.querySelector('div[class*="auction-market-main-cont"] > div[class*="add-listing"] > form')
     form.insertBefore(filtercont, form.querySelector('div[class*="silver"]'))
-    armorFilter.addEventListener('change', filterListings)
-    weaponFilter.addEventListener('change', filterListings)
-    bonusFilter.addEventListener('change', filterListings)
     document.querySelectorAll(`.${ ClassAuctionFilter } label.eqa-chk > input`).forEach(chk => chk.addEventListener('change', filterListings))
-    document.addEventListener('click', debounce(filterListings))
-    document.addEventListener('keyup', debounce(filterListings))
     window.addEventListener('hashchange', e => setVisibility(e.newURL))
-    setVisibility(window.location.href)
+    setTimeout(_ => setVisibility(window.location.href), 500)
   }
 
   const initInventoryFilters = _ => {
@@ -1137,12 +1174,9 @@
   }
 
   const annotate = _ => {
-    if(document.querySelector(AuctionLoader) || document.querySelector(InventoryLoader)) {
-      debounce(annotate)()
-    }
     Object.values(Configurations).forEach(config => document.querySelectorAll(config.Item).forEach(item => {
       item.firstElementChild.classList.add(ClassAnnotated)
-      if(ENABLE_EQUIPMENT_QUALITY) { item.addEventListener('mouseenter', _ => addQuality(config, item)) }
+      if(ENABLE_EQUIPMENT_QUALITY) { queueadd(addQuality, [config, item]); item.addEventListener('mouseenter', _ => addQuality(config, item)) }
       if(ENABLE_WEAPON_SCORE)      { addScore(config, item) }
       if(ENABLE_EQUIPMENT_BONUS)   { addBonuses(config, item) }
       if(ENABLE_WEAPON_MODS)       { addMods(config, item) }
@@ -1159,17 +1193,28 @@
     return false;
   }
 
-  const init = _ => {
-    window.addEventListener('hashchange', initAuctionFilters)
-    window.addEventListener('hashchange', auctionPageLoader)
-    window.addEventListener('click', debounce(initInventoryFilters))
-    window.addEventListener('click', debounce(annotate))
-    window.addEventListener('keyup', debounce(annotate))
-    window.addEventListener('scroll', debounce(annotate))
+  const observeList = _ => {
+    let listel
+    if(isAuction()) {
+      listel = document.querySelector('div[id] > div.items-list-wrap > ul.items-list.t-blue-cont.h')
+    } else if(isInventory()) {
+      listel = document.querySelector('div.items-wrap.primary-items.t-blue-cont')
+    }
+    if(!listel) { return }
+    new MutationObserver(async _ => updateAll()).observe(listel, { childList: true, subtree: true })
+  }
+
+  const updateAll = _ => {
+    annotate()
+    initAuctionFilters()
     auctionPageLoader()
     initInventoryFilters()
-    initAuctionFilters()
-    debounce(annotate)()
+  }
+
+  const init = _ => {
+    window.addEventListener('hashchange', observeList)
+    observeList()
+    updateAll()
   }
 
   const style = document.createElement('style');
